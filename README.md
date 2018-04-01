@@ -18,12 +18,12 @@
 
 ### Описание:
 
-В устройтсве используется модуль от NiRen собраный на Microchip MCP2515 CAN контроллер с TJA1050 CAN трансивером:
+В устройтсве используется модуль от **NiRen** собраный на Microchip MCP2515 CAN контроллер с TJA1050 CAN трансивером:
 
 ![NiRen circuit](https://github.com/nva1773/can-node/blob/master/Hard/MCP2515%20NiRen%20circuit.jpg)
-![NiRen board](https://github.com/nva1773/can-node/blob/master/Hard/MCP2515%20NiRen%20board.jpg)
+![NiRen board](https://github.com/nva1773/can-node/blob/master/Hard/MCP2515%20NiRen%20board.png)
 
-Для управления модулем используем микроконтроллер Microchip **PIC12F675**:
+Для управления модулем был выбран микроконтроллер Microchip **PIC12F675**:
 
 ![CAN node circuit](https://github.com/nva1773/can-node/blob/master/Hard/can%20node%20circuit.jpg)
 
