@@ -40,9 +40,9 @@
 ; ***********************************************************************
 ; * Using standart indefication (11 bits)                               *
 ; * RXB0 - 3FE - used RXF0 for RTR - Read Analog Channel 1              *
-; * RXB1 - not used - mask 0x7FF					                    *
-; * TXB0 - 3FD - Analog Value Channel 0                                 *
-; * TXB1 - 3FE - Analog Value Channel 1                             	*
+; * RXB1 - not used - mask 0x7FF                                        *
+; * TXB0 - 3FD - Transmit Analog Value Channel 0                        *
+; * TXB1 - 3FE - Transmit Analog Value Channel 1                      	*
 ; * TXB2 - 3FF - Can Error                                              *
 ; ***********************************************************************
 ```
