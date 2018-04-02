@@ -41,7 +41,7 @@
 		errorlevel -302
 
 ; ***********************************************
-; * Setup the PIC12C672 configuration Word      *
+; * Setup the PIC12F675 configuration Word      *
 ; ***********************************************
 
         __CONFIG   _CP_OFF & _WDT_ON & _MCLRE_OFF & _INTRC_OSC_NOCLKOUT
