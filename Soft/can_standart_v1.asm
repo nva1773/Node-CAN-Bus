@@ -73,34 +73,34 @@ int_pin     EQU     3
 ; * Interrupt service vector initialization     *
 ; ***********************************************
         org     0x04			
-        goto    isr			            ; Point ISR vector to the ISR handler
+        goto    isr			; Point ISR vector to the ISR handler
 
 ; ***********************************************
 ; * Start of Main Code                          *
 ; ***********************************************
 start
-        clrf	STATUS					;
+        clrf	STATUS			;
         banksel	OSCCAL
-        call	0x3FF					;
-        movwf 	OSCCAL					; Load OSC for INTRC
+        call	0x3FF			;
+        movwf 	OSCCAL			; Load OSC for INTRC
 		
-		banksel	OPTION_REG
-		movlw   0x87                    ; Disable internal pullups
+	banksel	OPTION_REG
+	movlw   0x87                    ; Disable internal pullups
                                         ; Interrupt on negative going edge on GP2
                                         ; Prescaler = 1:256
         movwf   OPTION_REG              ; Load the OPTION register
         
         banksel	CMCON
-        movlw	0x07					; Disable Comaparator
-        movwf	CMCON					; -
+        movlw	0x07			; Disable Comaparator
+        movwf	CMCON			; -
         
         banksel	TRISIO
         movlw   0x0B                    ; 0x0B -- 001011
         movwf   TRISIO                  ; set all ports output, except GP3/1/0
         
         banksel	IOCB
-        movlw	0x08					; Enable interrupt on change on GP3
-        movwf	IOCB					;
+        movlw	0x08			; Enable interrupt on change on GP3
+        movwf	IOCB			;
          
         banksel	ANSEL
         movlw   0x53                    ; Fosc/16, GP4&2 = DIO, GP0&1= ADC
@@ -117,22 +117,22 @@ start
         movwf   GPIO                    ; write to port
         
 ; Init counter and delay
-		clrf	delay_data
-		clrf	delay_cnt
+	clrf	delay_data
+	clrf	delay_cnt
 
 ; Init MCP2515
         call    MCP2515_init            ; initialize the MCP2515
 
 ; Initialize Timer0 = 10ms
-		banksel	TMR0
+	banksel	TMR0
         movlw   TMR_COUNT               ; Initialize Timer0
         movwf   TMR0                    ; Timer0 interrupt every 9.995mS
         
 ; GPIE set - interrupt on pin change
-        clrf	STATUS		            ; select bank0
-        movf	GPIO, W					; Read PORT
-        movlw	0x28					; GIE cleared - global interrupts disabled
-        movwf	INTCON					; TRM0 and GPIE enable, interrupt flags cleared 
+        clrf	STATUS		        ; select bank0
+        movf	GPIO, W			; Read PORT
+        movlw	0x28			; GIE cleared - global interrupts disabled
+        movwf	INTCON			; TRM0 and GPIE enable, interrupt flags cleared 
         bsf     INTCON,GIE              ; Enable Interrupts
 
 ; *******************************************
@@ -169,31 +169,31 @@ MCP2515_init
         bsf     GPIO,cs_pin             ; raise CS to terminate operation
         
 ; Choice STATUS == CONFIG, max loop = 256
-		clrf	can_cnt					; can_cnt = 256
+	clrf	can_cnt			; can_cnt = 256
 loop_read_mode
-		decfsz	can_cnt, F				;
-		goto	$+2						;
-		goto	MCP2515_init			; error read mode -> new init cycle
-		bcf     GPIO,cs_pin             ; lower CS to enable MCP2515
+	decfsz	can_cnt, F		;
+	goto	$+2			;
+	goto	MCP2515_init		; error read mode -> new init cycle
+	bcf     GPIO,cs_pin             ; lower CS to enable MCP2515
         movlw   CAN_READ                ; read command
         call    spi_send                ; send comand
         movlw   CANSTAT                 ; select CANSTAT register can_address
         call    spi_send                ; and send it
-		call	spi_receive				; read chip status 
-		bsf     GPIO,cs_pin             ; yes, raise CS to disable MCP2515
-		andlw	REQOP					; mask mode bits
-		xorlw	OPMODE_CONFIG			; choice from OPMODE_CONFIG
-		btfss	STATUS, Z				; EQ?
-		goto	loop_read_mode			; no, goto loop
-										; yes, next reg init		
-		movlw   0x71                    ; number of can_addresses to be written
+	call	spi_receive		; read chip status 
+	bsf     GPIO,cs_pin             ; yes, raise CS to disable MCP2515
+	andlw	REQOP			; mask mode bits
+	xorlw	OPMODE_CONFIG		; choice from OPMODE_CONFIG
+	btfss	STATUS, Z		; EQ?
+	goto	loop_read_mode		; no, goto loop
+					; yes, next reg init		
+	movlw   0x71                    ; number of can_addresses to be written
         movwf   can_cnt                 ; load into byte counter 
-        movlw	0x00					; register number
-        movwf	can_temp				; = 0
-        movlw   0x01					; data adderss
-        movwf   can_addr				; = 1
+        movlw	0x00			; register number
+        movwf	can_temp		; = 0
+        movlw   0x01			; data adderss
+        movwf   can_addr		; = 1
 seq_wr                                  ; sequential write loop
-		movlw   CAN_WRITE               ; write command
+	movlw   CAN_WRITE               ; write command
         bcf     GPIO,cs_pin             ; enable MCP2515
         call    spi_send                ; send command
         movf    can_temp, W             ; register address
@@ -205,11 +205,11 @@ seq_wr                                  ; sequential write loop
         movf    can_addr,W              ;
         call    reg_init_tbl            ; fetch byte to be written
         call    spi_send                ; send it to MCP2515
-		bsf     GPIO,cs_pin             ; disable MCP2515
+	bsf     GPIO,cs_pin             ; disable MCP2515
         incf    can_addr,F              ; increment the jump table pointer
         incf    can_addr,F              ; twice to point to the next byte
-        incf	can_temp, F				; next can reg
-	    decfsz  can_cnt,F               ; decrement the byte counter and test for zero
+        incf	can_temp, F		; next can reg
+	decfsz  can_cnt,F               ; decrement the byte counter and test for zero
         goto    seq_wr                  ; not done so repeat
 
 ; Mode NORMAL
@@ -232,12 +232,12 @@ seq_wr                                  ; sequential write loop
 ; *******************************************************************
 isr                                     
         btfsc   INTCON,T0IE             ; Timer0 interrupt?
-        call	isr_tmr0				; Yes, so jump to isr_tmr0
+        call	isr_tmr0		; Yes, so jump to isr_tmr0
         
-        btfsc	INTCON, GPIF			; GPIF interrupt?
+        btfsc	INTCON, GPIF		; GPIF interrupt?
         call    isr_pin                 ; Yes, so jump to external interrupt pin ISR
         
-        retfie 							; exit isr and re-enable interrupts       
+        retfie 				; exit isr and re-enable interrupts       
         
 ;--------------------------------------------------------------------
 isr_tmr0
@@ -270,20 +270,20 @@ isr_tmr0
         movlw   TXRTSCTRL               ; set read address to TXRTSCTRL
         call    spi_send                ;
         call    spi_receive             ; read data
-        bsf     GPIO,cs_pin				; disable MCP2515
+        bsf     GPIO,cs_pin		; disable MCP2515
         
-        movwf	can_data				; save data
-        rrf		can_data, F				; data >> 3
-        rrf		can_data, F				; -
-        rrf		can_data, F				; -
-        movlw	0x01					; mask B0BFS bit
-        andwf	can_data, F				; -
-		movlw   0xFF                    ; assume that B0BFS is to be set
+        movwf	can_data		; save data
+        rrf	can_data, F		; data >> 3
+        rrf	can_data, F		; -
+        rrf	can_data, F		; -
+        movlw	0x01			; mask B0BFS bit
+        andwf	can_data, F		; -
+	movlw   0xFF                    ; assume that B0BFS is to be set
         btfss   can_data, 0             ; test the value received in message and if it is 0
         movlw   0x00                    ; load w register to reset bit in BFPCTRL register
-		movwf	can_data				; save into can_data
+	movwf	can_data		; save into can_data
 		
-		movlw   CAN_BIT_MODIFY          ; use bit modify command to 
+	movlw   CAN_BIT_MODIFY          ; use bit modify command to 
         bcf     GPIO,cs_pin             ; set/reset the B1BFS bit of BFPCTRL register
         call    spi_send
         movlw   BFPCTRL
@@ -292,47 +292,47 @@ isr_tmr0
         call    spi_send
         movfw	can_data
         call    spi_send
-        bsf     GPIO,cs_pin				; disable MCP2515
+        bsf     GPIO,cs_pin		; disable MCP2515
         
 ; clear flag T0IF and return
         bcf     INTCON, T0IF            ; clear TMR0 interrupt flag
         return                          ; return
 ;--------------------------------------------------------------------
 isr_pin                                 ; Message received interrupt
-        movf	GPIO, W					; Read PORT
+        movf	GPIO, W			; Read PORT
         bcf     INTCON, GPIF            ; clear GPIF interrupt flag
         
-        btfsc	GPIO, int_pin			; if int_pin = 1 ( active 0 )
-	    return                    		; return
-      									; else
+        btfsc	GPIO, int_pin		; if int_pin = 1 ( active 0 )
+	return                    	; return
+      					; else
 ; reading CANINTF 
-	   movlw    CAN_READ                
-       bcf      GPIO,cs_pin             ; lower CS line
-       call     spi_send                ; send read command to MCP2515
-       movlw    CANINTF                 ; the interrupt flag register (CANINTF)
-       call     spi_send
-       call     spi_receive             ; read the data from the MCP2515
-       bsf      GPIO,cs_pin             ; terminate SPI read
-       movwf    can_data                ; save CANINTF value
+	movlw    CAN_READ                
+        bcf      GPIO,cs_pin             ; lower CS line
+        call     spi_send                ; send read command to MCP2515
+        movlw    CANINTF                 ; the interrupt flag register (CANINTF)
+        call     spi_send
+        call     spi_receive             ; read the data from the MCP2515
+        bsf      GPIO,cs_pin             ; terminate SPI read
+        movwf    can_data                ; save CANINTF value
 
 ; test interrupt bits
-       btfsc    can_data,RX0IF         	; test CANINTF for RX0IF
-       call     msg_rcvd                ; if RX0IF set go process message
+        btfsc    can_data,RX0IF          ; test CANINTF for RX0IF
+        call     msg_rcvd                ; if RX0IF set go process message
                                          
-       btfsc    can_data,ERRIF         	; test CANINTF for ERRIF 
-       call     can_err                 ; if ERRIF set go process CAN error
+        btfsc    can_data,ERRIF          ; test CANINTF for ERRIF 
+        call     can_err                 ; if ERRIF set go process CAN error
 
 ; clear CANINTF
-	   bcf     GPIO,cs_pin    	        ; enable MCP2515
-       movlw   CAN_WRITE                ; send write command to MCP2515
-       call    spi_send                 ;
-       movlw   CANINTF                  ; set write address to CANINTF
-       call    spi_send                 ;
-       movlw   0x00		                ; 
-       call    spi_send                 ;
-       bsf     GPIO,cs_pin              ; terminate SPI operation	
+	bcf     GPIO,cs_pin    	         ; enable MCP2515
+        movlw   CAN_WRITE                ; send write command to MCP2515
+        call    spi_send                 ;
+        movlw   CANINTF                  ; set write address to CANINTF
+        call    spi_send                 ;
+        movlw   0x00		         ; 
+        call    spi_send                 ;
+        bsf     GPIO,cs_pin              ; terminate SPI operation	
        
-       return
+        return
    
 ; *******************************************************************
 ; * Anadlog to Digital Conversion Routine                           * 
@@ -342,32 +342,32 @@ isr_pin                                 ; Message received interrupt
 ; * before returning to the calling function.                       *
 ; *******************************************************************
 adc_cnv
-		bsf		ADCON0,ADON				; ADC On
-		movlw	.10						; delay for charge capacity ADC
-		movwf	adc_delay				; -
-		decfsz	adc_delay, F			; -
-		goto	$-1						; -
-        bsf     ADCON0,GO				; ADC Start
+	bsf	ADCON0,ADON		; ADC On
+	movlw	.10			; delay for charge capacity ADC
+	movwf	adc_delay		; -
+	decfsz	adc_delay, F		; -
+	goto	$-1			; -
+        bsf     ADCON0,GO		; ADC Start
 adc_busy
         btfsc   ADCON0,GO_DONE          ; wait for ADC to complete
         goto    adc_busy
-        movf	ADRESH, W				; store ADC value
-		movwf	adc_data				; -
-        bcf		ADCON0,ADON				; ADC Off
+        movf	ADRESH, W		; store ADC value
+	movwf	adc_data		; -
+        bcf	ADCON0,ADON		; ADC Off
         return
 
 ; *******************************************************************
 ; * Counter from 0 to 255, one second tick  = 100 * 10ms            * 
 ; *******************************************************************
 counter
-		incf	delay_cnt, F
-		movlw	.100
-		xorwf	delay_cnt, W
-		btfss	STATUS, Z
-		return	
-		clrf	delay_cnt
-		incf	delay_data, F
-		return
+	incf	delay_cnt, F
+	movlw	.100
+	xorwf	delay_cnt, W
+	btfss	STATUS, Z
+	return	
+	clrf	delay_cnt
+	incf	delay_data, F
+	return
 ; *******************************************************************
 ; * CAN Msg Received Routine - Remote Frame (RxRTR <3> = 1)         * 
 ; * This routine is called when a message has been received into    *
@@ -432,7 +432,7 @@ filter_done
 ; * TXB2 message                                                    * 
 ; *******************************************************************
 can_err
-		movlw   CAN_READ                ; SPI Read operation
+	movlw   CAN_READ                ; SPI Read operation
         bcf     GPIO,cs_pin             ; enable MCP2515
         call    spi_send                ; 
         movlw   EFLG                    ; EFLG register to be read
@@ -466,7 +466,7 @@ can_err
 ; *******************************************************************
 ; * MCP2515 register initialization table                           * 
 ; * Store at the end of ROM memory                                  *
-; * Note that all can_addresses are initialized to simplify the         *
+; * Note that all can_addresses are initialized to simplify the     *
 ; * initialization code.                                            * 
 ; *******************************************************************
  
